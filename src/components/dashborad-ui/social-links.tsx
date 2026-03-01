@@ -9,7 +9,7 @@ const SOCIALS = [
 
 export function SocialLinks() {
     return (
-        <div style={{ display: "flex", gap: 5, marginBottom: 20, flexWrap: "wrap", justifyContent: "center" }}>
+        <div style={{ display: "flex", gap: 5, marginBottom: 20, flexWrap: "wrap", justifyContent: "flex-start" }}>
             {SOCIALS.map(s => (
                 <a key={s.label} href="#" className="sl" style={{
                     display: "flex", alignItems: "center", gap: 5,

@@ -2,7 +2,7 @@ import React from "react";
 
 export function ProfilePicture({ connected }: { connected: boolean }) {
     return (
-        <div style={{ position: "relative", marginBottom: 24 }}>
+        <div style={{ position: "relative", marginBottom: 0 }}>
             <div style={{
                 width: 88, height: 88, borderRadius: 24,
                 padding: 2.5,

@@ -83,29 +83,38 @@ export default function DashboardPage() {
           animation: "heroIn 0.65s cubic-bezier(.4,0,.2,1) both",
         }}>
 
-          <ProfilePicture connected={connected} />
+          {/* Container for Profile Picture + Info side-by-side */}
+          <div style={{
+            display: "flex", flexDirection: "row", flexWrap: "wrap",
+            justifyContent: "center", alignItems: "center",
+            gap: 24, marginBottom: 32, width: "100%", maxWidth: 640
+          }}>
+            <ProfilePicture connected={connected} />
 
-          <TitleSection />
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: "1 1 min-content" }}>
+              <TitleSection />
 
-          {connected && (
-            <div style={{ display: "flex", gap: 36, marginBottom: 28, animation: "rise 0.4s ease both" }}>
-              {[
-                { val: repos.length, lbl: "repos" },
-                { val: totalStars, lbl: "stars" },
-                { val: repos.filter(r => !r.private).length, lbl: "public" },
-              ].map(({ val, lbl }) => (
-                <div key={lbl} style={{ textAlign: "center" }}>
-                  <div style={{
-                    fontFamily: "'Syne', sans-serif", fontSize: 24, fontWeight: 800,
-                    background: "linear-gradient(135deg, #00a898 0%, #0078d4 100%)",
-                    WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-                    lineHeight: 1,
-                  }}>{val}</div>
-                  <div style={{ fontSize: 10, color: "#c8c4be", fontWeight: 600, marginTop: 3, letterSpacing: "0.1em", textTransform: "uppercase" }}>{lbl}</div>
+              {connected && (
+                <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 32, marginTop: 12, animation: "rise 0.4s ease both" }}>
+                  {[
+                    { val: repos.length, lbl: "repos" },
+                    { val: totalStars, lbl: "stars" },
+                    { val: repos.filter(r => !r.private).length, lbl: "public" },
+                  ].map(({ val, lbl }) => (
+                    <div key={lbl} style={{ textAlign: "center" }}>
+                      <div style={{
+                        fontFamily: "'Syne', sans-serif", fontSize: 24, fontWeight: 800,
+                        background: "linear-gradient(135deg, #00a898 0%, #0078d4 100%)",
+                        WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+                        lineHeight: 1,
+                      }}>{val}</div>
+                      <div style={{ fontSize: 10, color: "#c8c4be", fontWeight: 600, marginTop: 3, letterSpacing: "0.1em", textTransform: "uppercase" }}>{lbl}</div>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
-          )}
+          </div>
 
           <ConnectPill connected={connected} loading={loading} onConnect={connect} drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen} />
         </div>
