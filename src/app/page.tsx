@@ -1,7 +1,6 @@
-import React from 'react'
+import { SignUpButton } from '@clerk/nextjs'
 
 export default function Home() {
-  return (
-    <div>page</div>
-  )
+  return <SignUpButton/>    
+  
 }

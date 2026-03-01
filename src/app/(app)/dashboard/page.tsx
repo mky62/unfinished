@@ -99,7 +99,7 @@ export default function DashboardPage() {
       <aside
         className={[
           // layout
-          "flex flex-col h-screen overflow-y-auto z-50 shrink-0",
+          "flex flex-col h-screen  overflow-y-auto z-50 shrink-0",
           // colors
           "bg-[var(--bg-surface)] border-r border-[var(--border-subtle)]",
           // desktop: static, always visible
@@ -113,7 +113,7 @@ export default function DashboardPage() {
         ].join(" ")}
       >
         {/* Top mark + controls */}
-        <div className="flex justify-between items-center mb-12">
+        <div className="flex justify-between items-center  mb-12">
           <span className="font-[DM_Mono,monospace] text-[11px] tracking-[.12em] uppercase text-[var(--text-tertiary)]">
             GH / Profile
           </span>
