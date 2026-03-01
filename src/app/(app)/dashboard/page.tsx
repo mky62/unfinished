@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { ProfilePicture } from "@/src/components/dashborad-ui/profile-picture";
 import { TitleSection } from "@/src/components/dashborad-ui/title-section";
 import { ConnectPill } from "@/src/components/dashborad-ui/connect-pill";
-import { SearchBar } from "@/src/components/dashborad-ui/search-bar";
+import { SearchBar } from "@/src/components/dashborad-ui/drop-down";
 import { GitCard } from "@/src/components/dashborad-ui/git-card";
 
 const MOCK_REPOS = [
@@ -24,6 +24,8 @@ export default function DashboardPage() {
   const [repos, setRepos] = useState<any[]>([]);
   const [filter, setFilter] = useState("All");
   const [sort, setSort] = useState("updated");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isDark, setIsDark] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const connect = () => {
@@ -38,123 +40,424 @@ export default function DashboardPage() {
 
   const displayed = repos
     .filter(r => filter === "All" || r.lang === filter)
-    .sort((a, b) => sort === "stars" ? b.stars - a.stars : sort === "issues" ? b.issues - a.issues : 0);
+    .filter(r =>
+      searchQuery === ""
+        ? true
+        : r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        r.desc.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .sort((a, b) =>
+      sort === "stars"
+        ? b.stars - a.stars
+        : sort === "issues"
+          ? b.issues - a.issues
+          : 0
+    );
 
   const totalStars = repos.reduce((s, r) => s + r.stars, 0);
-  const DRAWER_H = "60vh";
 
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Manrope:wght@400;500;600&display=swap');
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body, #root { height: 100%; background: #f2f0ec; overflow: hidden; }
-        ::-webkit-scrollbar { width: 3px; }
-        ::-webkit-scrollbar-thumb { background: #ddd9d2; border-radius: 2px; }
-        @keyframes rise { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes spin { to{transform:rotate(360deg)} }
-        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
-        @keyframes heroIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
-        .sl:hover { background: #ece9e4 !important; color: #333 !important; border-color: #dddad4 !important; }
-        .fb:hover { background: #ece9e4 !important; color: #444 !important; border-color: #d8d4ce !important; }
-        .cbtn:hover:not(:disabled) { transform: scale(1.02) !important; box-shadow: 0 8px 32px rgba(0,160,140,0.22) !important; }
-        .cbtn { transition: all 0.18s ease !important; }
-        .tog:hover { background: #ebe8e3 !important; }
-        .sort-sel { appearance: none; }
-        .sort-sel option { background: #f8f7f5; color: #333; }
-      `}</style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap');
 
-      <div style={{
-        height: "100vh", width: "100vw",
-        background: "#f2f0ec",
-        position: "relative", overflow: "hidden",
-        fontFamily: "'Manrope', sans-serif",
-      }}>
-        <div style={{ position: "absolute", top: "-20%", left: "-10%", width: 700, height: 700, borderRadius: "50%", background: "radial-gradient(circle, rgba(0,190,170,0.07) 0%, transparent 65%)", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", bottom: "-20%", right: "-10%", width: 700, height: 700, borderRadius: "50%", background: "radial-gradient(circle, rgba(230,120,40,0.07) 0%, transparent 65%)", pointerEvents: "none" }} />
+.dashboard-root {
+  --bg-base: #f5f5f7;
+  --bg-surface: #ffffff;
+  --text-primary: #1d1d1f;
+  --text-secondary: #86868b;
+  --text-tertiary: rgba(0,0,0,.25);
+  --border-subtle: rgba(0,0,0,.06);
+  --border-medium: rgba(0,0,0,.12);
+  --hover-subtle: rgba(0,0,0,.04);
+}
 
-        <div style={{
-          position: "absolute", inset: 0,
-          display: "flex", flexDirection: "column",
-          alignItems: "center", justifyContent: "center",
-          padding: "0 24px",
-          paddingBottom: drawerOpen ? DRAWER_H : "0",
-          transition: "padding-bottom 0.52s cubic-bezier(.4,0,.2,1)",
-          animation: "heroIn 0.65s cubic-bezier(.4,0,.2,1) both",
-        }}>
+.dashboard-root[data-theme='dark'] {
+  --bg-base: #000000;
+  --bg-surface: #111111;
+  --text-primary: #f5f5f7;
+  --text-secondary: #a1a1aa;
+  --text-tertiary: rgba(255,255,255,.4);
+  --border-subtle: rgba(255,255,255,.1);
+  --border-medium: rgba(255,255,255,.2);
+  --hover-subtle: rgba(255,255,255,.1);
+}
 
-          {/* Container for Profile Picture + Info side-by-side */}
-          <div style={{
-            display: "flex", flexDirection: "row", flexWrap: "wrap",
-            justifyContent: "center", alignItems: "center",
-            gap: 24, marginBottom: 32, width: "100%", maxWidth: 640
-          }}>
-            <ProfilePicture connected={connected} />
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: "1 1 min-content" }}>
-              <TitleSection />
+html,body,#root{
+  height:100%;
+  background:var(--bg-base);
+  -webkit-font-smoothing:antialiased;
+}
 
-              {connected && (
-                <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 32, marginTop: 12, animation: "rise 0.4s ease both" }}>
-                  {[
-                    { val: repos.length, lbl: "repos" },
-                    { val: totalStars, lbl: "stars" },
-                    { val: repos.filter(r => !r.private).length, lbl: "public" },
-                  ].map(({ val, lbl }) => (
-                    <div key={lbl} style={{ textAlign: "center" }}>
-                      <div style={{
-                        fontFamily: "'Syne', sans-serif", fontSize: 24, fontWeight: 800,
-                        background: "linear-gradient(135deg, #00a898 0%, #0078d4 100%)",
-                        WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-                        lineHeight: 1,
-                      }}>{val}</div>
-                      <div style={{ fontSize: 10, color: "#c8c4be", fontWeight: 600, marginTop: 3, letterSpacing: "0.1em", textTransform: "uppercase" }}>{lbl}</div>
-                    </div>
-                  ))}
-                </div>
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-thumb{background:var(--border-medium);border-radius:999px}
+::-webkit-scrollbar-track{background:transparent}
+
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(12px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+@keyframes fadeIn{
+  from{opacity:0}
+  to{opacity:1}
+}
+
+@keyframes slideRight{
+  from{opacity:0;transform:translateX(-8px)}
+  to{opacity:1;transform:translateX(0)}
+}
+
+.stat-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  padding:14px 0;
+  border-bottom:1px solid var(--border-subtle);
+  animation:slideRight .4s ease both;
+}
+
+.stat-row:last-child{border-bottom:none}
+
+.stat-label{
+  font-family:'DM Sans',sans-serif;
+  font-size:11px;
+  font-weight:500;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--text-secondary);
+}
+
+.stat-val{
+  font-family:'DM Mono',monospace;
+  font-size:22px;
+  font-weight:500;
+  color:var(--text-primary);
+  letter-spacing:-0.03em;
+}
+
+.cbtn{
+  transition:transform .18s ease,box-shadow .18s ease,background .18s ease;
+}
+
+.cbtn:hover:not(:disabled){
+  transform:translateY(-1px);
+  box-shadow:0 8px 24px rgba(0,0,0,.13);
+}
+
+.repo-panel{
+  animation:fadeIn .5s ease both;
+}
+
+.tog:hover{background:var(--hover-subtle)!important}
+
+.sort-sel{appearance:none}
+.sort-sel option{background:var(--bg-surface);color:var(--text-primary)}
+
+.sl:hover,.fb:hover{
+  background:var(--hover-subtle)!important;
+  border-color:var(--border-medium)!important;
+}
+
+.vertical-rule{
+  position:absolute;
+  top:0;
+  bottom:0;
+  left:320px;
+  width:1px;
+  background:var(--border-subtle);
+}
+`}</style>
+
+      <div
+        className="dashboard-root"
+        data-theme={isDark ? "dark" : "light"}
+        style={{
+          height: "100vh",
+          width: "100vw",
+          background: "var(--bg-base)",
+          fontFamily: "'DM Sans',sans-serif",
+          position: "relative",
+          overflow: "hidden",
+          display: "flex",
+          color: "var(--text-primary)",
+        }}
+      >
+        {/* ── LEFT SIDEBAR ── */}
+        <aside
+          style={{
+            width: 320,
+            flexShrink: 0,
+            height: "100vh",
+            background: "var(--bg-surface)",
+            display: "flex",
+            flexDirection: "column",
+            padding: "48px 36px",
+            position: "relative",
+            zIndex: 2,
+            borderRight: "1px solid var(--border-subtle)",
+          }}
+        >
+          {/* Top mark & Theme Toggle */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 48 }}>
+            <div
+              style={{
+                fontFamily: "'DM Mono',monospace",
+                fontSize: 11,
+                letterSpacing: ".12em",
+                textTransform: "uppercase",
+                color: "var(--text-tertiary)",
+              }}
+            >
+              GH / Profile
+            </div>
+
+            <button
+              onClick={() => setIsDark(!isDark)}
+              style={{
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "var(--text-secondary)",
+                padding: 4,
+                borderRadius: "50%",
+                transition: "background 0.2s"
+              }}
+              onMouseOver={e => e.currentTarget.style.background = "var(--hover-subtle)"}
+              onMouseOut={e => e.currentTarget.style.background = "transparent"}
+            >
+              {isDark ? (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5" /><path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" /></svg>
+              ) : (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" /></svg>
               )}
-            </div>
+            </button>
           </div>
 
-          <ConnectPill connected={connected} loading={loading} onConnect={connect} drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen} />
-        </div>
+          {/* Profile picture */}
+          <div style={{ marginBottom: 28 }}>
+            <ProfilePicture connected={connected} />
+          </div>
 
-        {connected && (
-          <div style={{
-            position: "absolute", left: 0, right: 0, bottom: 0,
-            height: DRAWER_H,
-            background: "rgba(248,246,242,0.96)",
-            backdropFilter: "blur(24px)",
-            borderTop: "1px solid #e4e0da",
-            borderRadius: "18px 18px 0 0",
-            transform: drawerOpen ? "translateY(0)" : "translateY(100%)",
-            transition: "transform 0.52s cubic-bezier(.4,0,.2,1)",
-            display: "flex", flexDirection: "column",
+          {/* Title */}
+          <div style={{ marginBottom: 32 }}>
+            <TitleSection />
+          </div>
+
+          {/* Stats — appear after connect */}
+          {connected && (
+            <div
+              style={{
+                flex: 1,
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "flex-start",
+              }}
+            >
+              <div
+                style={{
+                  borderTop: "1px solid var(--border-subtle)",
+                  marginBottom: 4,
+                }}
+              />
+              {[
+                { val: repos.length, lbl: "Repositories" },
+                { val: totalStars, lbl: "Total Stars" },
+                { val: repos.filter(r => !r.private).length, lbl: "Public" },
+                { val: repos.filter(r => r.private).length, lbl: "Private" },
+              ].map(({ val, lbl }, i) => (
+                <div
+                  key={lbl}
+                  className="stat-row"
+                  style={{ animationDelay: `${i * 60}ms` }}
+                >
+                  <span className="stat-label">{lbl}</span>
+                  <span className="stat-val">{val}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Spacer */}
+          <div style={{ flex: connected ? 0 : 1 }} />
+
+          {/* Connect pill anchored at bottom of sidebar */}
+          <div style={{ paddingTop: 24 }}>
+            <ConnectPill
+              connected={connected}
+              loading={loading}
+              onConnect={connect}
+              drawerOpen={drawerOpen}
+              setDrawerOpen={setDrawerOpen}
+            />
+          </div>
+        </aside>
+
+        {/* ── RIGHT PANEL ── */}
+        <main
+          style={{
+            flex: 1,
+            height: "100vh",
             overflow: "hidden",
-            boxShadow: "0 -12px 48px rgba(0,0,0,0.07)",
-          }}>
-            <div style={{ height: 2, background: "linear-gradient(90deg, #00c8b4, #0090ff 50%, #ff8c28)", flexShrink: 0 }} />
-
-            <div style={{ display: "flex", justifyContent: "center", padding: "10px 0 4px", cursor: "pointer", flexShrink: 0 }} onClick={() => setDrawerOpen(false)}>
-              <div style={{ width: 34, height: 3, borderRadius: 2, background: "#ddd9d2" }} />
+            display: "flex",
+            flexDirection: "column",
+            background: "#f5f5f7",
+          }}
+        >
+          {!connected ? (
+            /* Empty state — geometric negative space */
+            <div
+              style={{
+                flex: 1,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 0,
+                animation: "fadeIn .8s ease both",
+              }}
+            >
+              <div
+                style={{
+                  width: 1,
+                  height: 80,
+                  background:
+                    "linear-gradient(to bottom, transparent, rgba(0,0,0,.12))",
+                  marginBottom: 32,
+                }}
+              />
+              <p
+                style={{
+                  fontFamily: "'DM Mono',monospace",
+                  fontSize: 12,
+                  color: "rgba(0,0,0,.25)",
+                  letterSpacing: ".1em",
+                  textTransform: "uppercase",
+                }}
+              >
+                connect to load repositories
+              </p>
+              <div
+                style={{
+                  width: 1,
+                  height: 80,
+                  background:
+                    "linear-gradient(to bottom, rgba(0,0,0,.12), transparent)",
+                  marginTop: 32,
+                }}
+              />
             </div>
+          ) : (
+            <div
+              className="repo-panel"
+              style={{
+                flex: 1,
+                display: "flex",
+                flexDirection: "column",
+                overflow: "hidden",
+              }}
+            >
+              {/* Top bar */}
+              <div
+                style={{
+                  padding: "36px 40px 0",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <div
+                  style={{
+                    fontFamily: "'Playfair Display',serif",
+                    fontSize: 22,
+                    fontWeight: 400,
+                    color: "#1d1d1f",
+                    letterSpacing: "-0.01em",
+                  }}
+                >
+                  Repositories
+                </div>
+                <div
+                  style={{
+                    fontFamily: "'DM Mono',monospace",
+                    fontSize: 11,
+                    color: "#86868b",
+                    letterSpacing: ".06em",
+                  }}
+                >
+                  {displayed.length} / {repos.length}
+                </div>
+              </div>
 
-            <SearchBar filter={filter} setFilter={setFilter} sort={sort} setSort={setSort} langs={LANGS} />
+              {/* Hairline */}
+              <div
+                style={{
+                  height: 1,
+                  background: "rgba(0,0,0,.06)",
+                  margin: "20px 40px 0",
+                }}
+              />
 
-            <div style={{
-              flex: 1, overflowY: "auto",
-              padding: "0 28px 28px",
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
-              gap: 8, alignContent: "start",
-            }}>
-              {displayed.length === 0
-                ? <p style={{ fontSize: 13, color: "#ccc9c4", padding: 28, gridColumn: "1/-1", textAlign: "center" }}>No repos match.</p>
-                : displayed.map((r, i) => <GitCard key={r.id} repo={r} i={i} />)
-              }
+              {/* Search + Filter */}
+              <div style={{ padding: "16px 40px 0" }}>
+                <SearchBar
+                  filter={filter}
+                  setFilter={setFilter}
+                  sort={sort}
+                  setSort={setSort}
+                  langs={LANGS}
+                />
+              </div>
+
+              {/* Grid */}
+              <div
+                style={{
+                  flex: 1,
+                  overflowY: "auto",
+                  padding: "20px 40px 40px",
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill,minmax(260px,1fr))",
+                  gap: 14,
+                  alignContent: "start",
+                }}
+              >
+                {displayed.length === 0 ? (
+                  <div
+                    style={{
+                      gridColumn: "1/-1",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      padding: "64px 0",
+                      gap: 12,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontFamily: "'DM Mono',monospace",
+                        fontSize: 11,
+                        color: "rgba(0,0,0,.25)",
+                        letterSpacing: ".1em",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      No repos match
+                    </div>
+                  </div>
+                ) : (
+                  displayed.map((r, i) => (
+                    <GitCard key={r.id} repo={r} i={i} />
+                  ))
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </main>
       </div>
     </>
   );
