@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ProfilePicture } from "@/src/components/dashborad-ui/profile-picture";
 import { TitleSection } from "@/src/components/dashborad-ui/title-section";
 import { ConnectPill } from "@/src/components/dashborad-ui/connect-pill";
@@ -18,6 +18,34 @@ const MOCK_REPOS = [
 
 const LANGS = ["All", "Python", "TypeScript", "Rust", "Shell"];
 
+const SunIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="5" />
+    <path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" />
+  </svg>
+);
+
+const MoonIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+  </svg>
+);
+
+const HamburgerIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <line x1="3" y1="6" x2="21" y2="6" />
+    <line x1="3" y1="12" x2="21" y2="12" />
+    <line x1="3" y1="18" x2="21" y2="18" />
+  </svg>
+);
+
+const CloseIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <line x1="18" y1="6" x2="6" y2="18" />
+    <line x1="6" y1="6" x2="18" y2="18" />
+  </svg>
+);
+
 export default function DashboardPage() {
   const [connected, setConnected] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -27,6 +55,7 @@ export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isDark, setIsDark] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const connect = () => {
     setLoading(true);
@@ -47,418 +76,190 @@ export default function DashboardPage() {
         r.desc.toLowerCase().includes(searchQuery.toLowerCase())
     )
     .sort((a, b) =>
-      sort === "stars"
-        ? b.stars - a.stars
-        : sort === "issues"
-          ? b.issues - a.issues
-          : 0
+      sort === "stars" ? b.stars - a.stars : sort === "issues" ? b.issues - a.issues : 0
     );
 
   const totalStars = repos.reduce((s, r) => s + r.stars, 0);
 
   return (
-    <>
-      <style>{`
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap');
+    <div
+      className="dashboard-root h-screen w-screen overflow-hidden flex bg-[var(--bg-base)] text-[var(--text-primary)] font-[DM_Sans,sans-serif] relative"
+      data-theme={isDark ? "dark" : "light"}
+    >
 
-.dashboard-root {
-  --bg-base: #f5f5f7;
-  --bg-surface: #ffffff;
-  --text-primary: #1d1d1f;
-  --text-secondary: #86868b;
-  --text-tertiary: rgba(0,0,0,.25);
-  --border-subtle: rgba(0,0,0,.06);
-  --border-medium: rgba(0,0,0,.12);
-  --hover-subtle: rgba(0,0,0,.04);
-}
+      {/* ── MOBILE OVERLAY ── */}
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          className="fixed inset-0 bg-black/40 z-40 md:hidden animate-[fadeIn_.2s_ease_both]"
+        />
+      )}
 
-.dashboard-root[data-theme='dark'] {
-  --bg-base: #000000;
-  --bg-surface: #111111;
-  --text-primary: #f5f5f7;
-  --text-secondary: #a1a1aa;
-  --text-tertiary: rgba(255,255,255,.4);
-  --border-subtle: rgba(255,255,255,.1);
-  --border-medium: rgba(255,255,255,.2);
-  --hover-subtle: rgba(255,255,255,.1);
-}
-
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-
-html,body,#root{
-  height:100%;
-  background:var(--bg-base);
-  -webkit-font-smoothing:antialiased;
-}
-
-::-webkit-scrollbar{width:5px}
-::-webkit-scrollbar-thumb{background:var(--border-medium);border-radius:999px}
-::-webkit-scrollbar-track{background:transparent}
-
-@keyframes fadeUp{
-  from{opacity:0;transform:translateY(12px)}
-  to{opacity:1;transform:translateY(0)}
-}
-
-@keyframes fadeIn{
-  from{opacity:0}
-  to{opacity:1}
-}
-
-@keyframes slideRight{
-  from{opacity:0;transform:translateX(-8px)}
-  to{opacity:1;transform:translateX(0)}
-}
-
-.stat-row{
-  display:flex;
-  justify-content:space-between;
-  align-items:baseline;
-  padding:14px 0;
-  border-bottom:1px solid var(--border-subtle);
-  animation:slideRight .4s ease both;
-}
-
-.stat-row:last-child{border-bottom:none}
-
-.stat-label{
-  font-family:'DM Sans',sans-serif;
-  font-size:11px;
-  font-weight:500;
-  letter-spacing:.08em;
-  text-transform:uppercase;
-  color:var(--text-secondary);
-}
-
-.stat-val{
-  font-family:'DM Mono',monospace;
-  font-size:22px;
-  font-weight:500;
-  color:var(--text-primary);
-  letter-spacing:-0.03em;
-}
-
-.cbtn{
-  transition:transform .18s ease,box-shadow .18s ease,background .18s ease;
-}
-
-.cbtn:hover:not(:disabled){
-  transform:translateY(-1px);
-  box-shadow:0 8px 24px rgba(0,0,0,.13);
-}
-
-.repo-panel{
-  animation:fadeIn .5s ease both;
-}
-
-.tog:hover{background:var(--hover-subtle)!important}
-
-.sort-sel{appearance:none}
-.sort-sel option{background:var(--bg-surface);color:var(--text-primary)}
-
-.sl:hover,.fb:hover{
-  background:var(--hover-subtle)!important;
-  border-color:var(--border-medium)!important;
-}
-
-.vertical-rule{
-  position:absolute;
-  top:0;
-  bottom:0;
-  left:320px;
-  width:1px;
-  background:var(--border-subtle);
-}
-`}</style>
-
-      <div
-        className="dashboard-root"
-        data-theme={isDark ? "dark" : "light"}
-        style={{
-          height: "100vh",
-          width: "100vw",
-          background: "var(--bg-base)",
-          fontFamily: "'DM Sans',sans-serif",
-          position: "relative",
-          overflow: "hidden",
-          display: "flex",
-          color: "var(--text-primary)",
-        }}
+      {/* ── SIDEBAR ── */}
+      <aside
+        className={[
+          // layout
+          "flex flex-col h-screen overflow-y-auto z-50 shrink-0",
+          // colors
+          "bg-[var(--bg-surface)] border-r border-[var(--border-subtle)]",
+          // desktop: static, always visible
+          "md:relative md:translate-x-0 md:w-[320px] lg:w-[320px]",
+          // mobile: fixed slide-over
+          "fixed top-0 left-0 w-[85vw] max-w-[320px]",
+          "transition-transform duration-300 ease-in-out",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
+          // padding
+          "px-9 py-12",
+        ].join(" ")}
       >
-        {/* ── LEFT SIDEBAR ── */}
-        <aside
-          style={{
-            width: 320,
-            flexShrink: 0,
-            height: "100vh",
-            background: "var(--bg-surface)",
-            display: "flex",
-            flexDirection: "column",
-            padding: "48px 36px",
-            position: "relative",
-            zIndex: 2,
-            borderRight: "1px solid var(--border-subtle)",
-          }}
-        >
-          {/* Top mark & Theme Toggle */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 48 }}>
-            <div
-              style={{
-                fontFamily: "'DM Mono',monospace",
-                fontSize: 11,
-                letterSpacing: ".12em",
-                textTransform: "uppercase",
-                color: "var(--text-tertiary)",
-              }}
-            >
-              GH / Profile
-            </div>
+        {/* Top mark + controls */}
+        <div className="flex justify-between items-center mb-12">
+          <span className="font-[DM_Mono,monospace] text-[11px] tracking-[.12em] uppercase text-[var(--text-tertiary)]">
+            GH / Profile
+          </span>
 
+          <div className="flex items-center gap-1">
+            {/* Theme toggle */}
             <button
               onClick={() => setIsDark(!isDark)}
-              style={{
-                background: "transparent",
-                border: "none",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "var(--text-secondary)",
-                padding: 4,
-                borderRadius: "50%",
-                transition: "background 0.2s"
-              }}
-              onMouseOver={e => e.currentTarget.style.background = "var(--hover-subtle)"}
-              onMouseOut={e => e.currentTarget.style.background = "transparent"}
+              className="tog bg-transparent border-none cursor-pointer flex items-center justify-center text-[var(--text-secondary)] p-1.5 rounded-full transition-colors duration-200"
             >
-              {isDark ? (
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5" /><path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" /></svg>
-              ) : (
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" /></svg>
-              )}
+              {isDark ? <SunIcon /> : <MoonIcon />}
+            </button>
+
+            {/* Close — mobile only */}
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="tog md:hidden bg-transparent border-none cursor-pointer flex items-center justify-center text-[var(--text-secondary)] p-1.5 rounded-full transition-colors duration-200"
+            >
+              <CloseIcon />
             </button>
           </div>
+        </div>
 
-          {/* Profile picture */}
-          <div style={{ marginBottom: 28 }}>
-            <ProfilePicture connected={connected} />
+        {/* Profile picture */}
+        <div className="mb-7">
+          <ProfilePicture connected={connected} />
+        </div>
+
+        {/* Title */}
+        <div className="mb-8">
+          <TitleSection />
+        </div>
+
+        {/* Stats */}
+        {connected && (
+          <div className="flex-1 flex flex-col justify-start">
+            <div className="border-t border-[var(--border-subtle)] mb-1" />
+            {[
+              { val: repos.length, lbl: "Repositories" },
+              { val: totalStars, lbl: "Total Stars" },
+              { val: repos.filter(r => !r.private).length, lbl: "Public" },
+              { val: repos.filter(r => r.private).length, lbl: "Private" },
+            ].map(({ val, lbl }, i) => (
+              <div
+                key={lbl}
+                className="stat-row"
+                style={{ animationDelay: `${i * 60}ms` }}
+              >
+                <span className="stat-label">{lbl}</span>
+                <span className="stat-val">{val}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className={connected ? "" : "flex-1"} />
+
+        {/* Connect pill */}
+        <div className="pt-6">
+          <ConnectPill
+            connected={connected}
+            loading={loading}
+            onConnect={connect}
+            drawerOpen={drawerOpen}
+            setDrawerOpen={setDrawerOpen}
+          />
+        </div>
+      </aside>
+
+      {/* ── RIGHT PANEL ── */}
+      <main className="flex-1 h-screen overflow-hidden flex flex-col bg-[var(--bg-base)] min-w-0">
+
+        {/* ── MOBILE HEADER ── */}
+        <div className="flex md:hidden items-center justify-between px-5 py-4 bg-[var(--bg-surface)] border-b border-[var(--border-subtle)] shrink-0">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="tog bg-transparent border-none cursor-pointer flex items-center justify-center text-[var(--text-secondary)] p-1.5 rounded-full"
+          >
+            <HamburgerIcon />
+          </button>
+
+          <span className="font-[DM_Mono,monospace] text-[11px] tracking-[.12em] uppercase text-[var(--text-tertiary)]">
+            GH / Profile
+          </span>
+
+          <button
+            onClick={() => setIsDark(!isDark)}
+            className="tog bg-transparent border-none cursor-pointer flex items-center justify-center text-[var(--text-secondary)] p-1.5 rounded-full"
+          >
+            {isDark ? <SunIcon /> : <MoonIcon />}
+          </button>
+        </div>
+
+        {/* ── EMPTY STATE ── */}
+        {!connected ? (
+          <div className="flex-1 flex flex-col items-center justify-center animate-[fadeIn_.8s_ease_both]">
+            <div className="w-px h-20 bg-gradient-to-b from-transparent to-[var(--border-medium)] mb-8" />
+            <p className="font-[DM_Mono,monospace] text-xs text-[var(--text-tertiary)] tracking-[.1em] uppercase text-center px-6">
+              connect to load repositories
+            </p>
+            <div className="w-px h-20 bg-gradient-to-b from-[var(--border-medium)] to-transparent mt-8" />
           </div>
 
-          {/* Title */}
-          <div style={{ marginBottom: 32 }}>
-            <TitleSection />
+        ) : (
+          // ── REPO PANEL ──
+          <div className="repo-panel flex-1 flex flex-col overflow-hidden">
+
+            {/* Top bar */}
+            <div className="px-6 md:px-10 pt-6 md:pt-9 flex items-center justify-between shrink-0">
+              <span className="font-[Playfair_Display,serif] text-xl md:text-[22px] font-normal text-[var(--text-primary)] tracking-[-0.01em]">
+                Repositories
+              </span>
+              <span className="font-[DM_Mono,monospace] text-[11px] text-[var(--text-secondary)] tracking-[.06em]">
+                {displayed.length} / {repos.length}
+              </span>
+            </div>
+
+            {/* Hairline */}
+            <div className="h-px bg-[var(--border-subtle)] mx-6 md:mx-10 mt-5 shrink-0" />
+
+            {/* Search + Filter */}
+            <div className="px-6 md:px-10 pt-4 shrink-0">
+              <SearchBar
+                filter={filter}
+                setFilter={setFilter}
+                sort={sort}
+                setSort={setSort}
+                langs={LANGS}
+              />
+            </div>
+
+            {/* Grid */}
+            <div className="flex-1 overflow-y-auto px-6 md:px-10 pt-5 pb-10 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3.5 content-start">
+              {displayed.length === 0 ? (
+                <div className="col-span-full flex flex-col items-center py-16 gap-3">
+                  <span className="font-[DM_Mono,monospace] text-[11px] text-[var(--text-tertiary)] tracking-[.1em] uppercase">
+                    No repos match
+                  </span>
+                </div>
+              ) : (
+                displayed.map((r, i) => <GitCard key={r.id} repo={r} i={i} />)
+              )}
+            </div>
           </div>
-
-          {/* Stats — appear after connect */}
-          {connected && (
-            <div
-              style={{
-                flex: 1,
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "flex-start",
-              }}
-            >
-              <div
-                style={{
-                  borderTop: "1px solid var(--border-subtle)",
-                  marginBottom: 4,
-                }}
-              />
-              {[
-                { val: repos.length, lbl: "Repositories" },
-                { val: totalStars, lbl: "Total Stars" },
-                { val: repos.filter(r => !r.private).length, lbl: "Public" },
-                { val: repos.filter(r => r.private).length, lbl: "Private" },
-              ].map(({ val, lbl }, i) => (
-                <div
-                  key={lbl}
-                  className="stat-row"
-                  style={{ animationDelay: `${i * 60}ms` }}
-                >
-                  <span className="stat-label">{lbl}</span>
-                  <span className="stat-val">{val}</span>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Spacer */}
-          <div style={{ flex: connected ? 0 : 1 }} />
-
-          {/* Connect pill anchored at bottom of sidebar */}
-          <div style={{ paddingTop: 24 }}>
-            <ConnectPill
-              connected={connected}
-              loading={loading}
-              onConnect={connect}
-              drawerOpen={drawerOpen}
-              setDrawerOpen={setDrawerOpen}
-            />
-          </div>
-        </aside>
-
-        {/* ── RIGHT PANEL ── */}
-        <main
-          style={{
-            flex: 1,
-            height: "100vh",
-            overflow: "hidden",
-            display: "flex",
-            flexDirection: "column",
-            background: "#f5f5f7",
-          }}
-        >
-          {!connected ? (
-            /* Empty state — geometric negative space */
-            <div
-              style={{
-                flex: 1,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 0,
-                animation: "fadeIn .8s ease both",
-              }}
-            >
-              <div
-                style={{
-                  width: 1,
-                  height: 80,
-                  background:
-                    "linear-gradient(to bottom, transparent, rgba(0,0,0,.12))",
-                  marginBottom: 32,
-                }}
-              />
-              <p
-                style={{
-                  fontFamily: "'DM Mono',monospace",
-                  fontSize: 12,
-                  color: "rgba(0,0,0,.25)",
-                  letterSpacing: ".1em",
-                  textTransform: "uppercase",
-                }}
-              >
-                connect to load repositories
-              </p>
-              <div
-                style={{
-                  width: 1,
-                  height: 80,
-                  background:
-                    "linear-gradient(to bottom, rgba(0,0,0,.12), transparent)",
-                  marginTop: 32,
-                }}
-              />
-            </div>
-          ) : (
-            <div
-              className="repo-panel"
-              style={{
-                flex: 1,
-                display: "flex",
-                flexDirection: "column",
-                overflow: "hidden",
-              }}
-            >
-              {/* Top bar */}
-              <div
-                style={{
-                  padding: "36px 40px 0",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                }}
-              >
-                <div
-                  style={{
-                    fontFamily: "'Playfair Display',serif",
-                    fontSize: 22,
-                    fontWeight: 400,
-                    color: "#1d1d1f",
-                    letterSpacing: "-0.01em",
-                  }}
-                >
-                  Repositories
-                </div>
-                <div
-                  style={{
-                    fontFamily: "'DM Mono',monospace",
-                    fontSize: 11,
-                    color: "#86868b",
-                    letterSpacing: ".06em",
-                  }}
-                >
-                  {displayed.length} / {repos.length}
-                </div>
-              </div>
-
-              {/* Hairline */}
-              <div
-                style={{
-                  height: 1,
-                  background: "rgba(0,0,0,.06)",
-                  margin: "20px 40px 0",
-                }}
-              />
-
-              {/* Search + Filter */}
-              <div style={{ padding: "16px 40px 0" }}>
-                <SearchBar
-                  filter={filter}
-                  setFilter={setFilter}
-                  sort={sort}
-                  setSort={setSort}
-                  langs={LANGS}
-                />
-              </div>
-
-              {/* Grid */}
-              <div
-                style={{
-                  flex: 1,
-                  overflowY: "auto",
-                  padding: "20px 40px 40px",
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fill,minmax(260px,1fr))",
-                  gap: 14,
-                  alignContent: "start",
-                }}
-              >
-                {displayed.length === 0 ? (
-                  <div
-                    style={{
-                      gridColumn: "1/-1",
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      padding: "64px 0",
-                      gap: 12,
-                    }}
-                  >
-                    <div
-                      style={{
-                        fontFamily: "'DM Mono',monospace",
-                        fontSize: 11,
-                        color: "rgba(0,0,0,.25)",
-                        letterSpacing: ".1em",
-                        textTransform: "uppercase",
-                      }}
-                    >
-                      No repos match
-                    </div>
-                  </div>
-                ) : (
-                  displayed.map((r, i) => (
-                    <GitCard key={r.id} repo={r} i={i} />
-                  ))
-                )}
-              </div>
-            </div>
-          )}
-        </main>
-      </div>
-    </>
+        )}
+      </main>
+    </div>
   );
 }
