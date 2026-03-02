@@ -1,6 +1,6 @@
 import Image from "next/image"
 import { auth, clerkClient } from "@clerk/nextjs/server"
-import Banner from '@/public/whiteban.jpg'
+import Banner from '@/public/wallbanner.jpg'
 import Navbar from "@/src/components/navbar/Navbar"
 
 type FeaturedRepo = {
@@ -72,7 +72,6 @@ bg-[linear-gradient(195deg,#399be6_4%,#a1dfe6_39%,#f0902a_97%)]
               Get Started
             </button>
           </div>
-        </div>
         </div>
     </section>
     </div>
