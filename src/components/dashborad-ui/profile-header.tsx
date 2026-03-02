@@ -1,17 +1,8 @@
 import { ThemeToggle } from "@/src/components/ThemeToggle"
 import { EditableProfileTitle } from "@/src/components/dashborad-ui/editable-profile-title"
 import { EditableSocialLinks } from "@/src/components/dashborad-ui/editable-social-links"
+import {GithubUser} from '@/src/lib/types'
 
-type GithubUser = {
-  login: string
-  name?: string | null
-  avatar_url?: string
-  html_url?: string
-  bio?: string | null
-  blog?: string | null
-  twitter_username?: string | null
-  public_repos?: number
-}
 
 export function DashboardProfileHeader({
   user,

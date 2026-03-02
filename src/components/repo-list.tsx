@@ -1,29 +1,7 @@
-type Repo = {
-  id: number
-  full_name: string
-  name?: string
-  html_url?: string
-  stargazers_count: number
-  forks_count?: number
-  open_issues_count?: number
-  language: string | null
-  description?: string | null
-  pushed_at?: string
-}
-
-type GithubUser = {
-  login: string
-  name?: string | null
-  avatar_url?: string
-  html_url?: string
-  bio?: string | null
-  blog?: string | null
-  twitter_username?: string | null
-  public_repos?: number
-}
-
+import {Repo,GithubUser} from '@/src/lib/types'
 import { DashboardProfileHeader } from "@/src/components/dashborad-ui/profile-header"
 import { RepoBrowser } from "@/src/components/dashborad-ui/repo-browser"
+import { user } from '@/src/lib/img'
 
 export default async function RepoList({
   repos,
@@ -32,12 +10,7 @@ export default async function RepoList({
   repos: Repo[]
   token: string
 }) {
-  // Fetch GitHub user profile once for the header
-  const userRes = await fetch("https://api.github.com/user", {
-    headers: { Authorization: `Bearer ${token}` },
-    cache: "no-store",
-  })
-  const user = (await userRes.json()) as GithubUser
+
 
   const totalStars = repos.reduce(
     (sum, repo) => sum + (repo.stargazers_count || 0),

@@ -5,7 +5,7 @@ export async function getGithubToken(userId: string) {
   const client = await clerkClient()
   const tokens = await client.users.getUserOauthAccessToken(
     userId,
-    "oauth_github",
+    "github",
   )
   const firstToken = tokens.data[0]
   return firstToken?.token ?? null // null = not connected
