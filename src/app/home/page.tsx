@@ -1,8 +1,6 @@
 import Image from "next/image"
-import Link from "next/link"
-import Logo from "@/public/croplogo.png"
 import { auth, clerkClient } from "@clerk/nextjs/server"
-import Banner from '@/public/unbg.jpg'
+import Banner from '@/public/whiteban.jpg'
 import Navbar from "@/src/components/navbar/Navbar"
 
 type FeaturedRepo = {
@@ -32,50 +30,52 @@ export default async function LandingPage() {
     .slice(0, 12)
 
   return (
-  <main className="min-h-screen bg-black">
+  <main className="min-h-screen
+bg-[linear-gradient(195deg,#399be6_4%,#a1dfe6_39%,#f0902a_97%)]
+">    <Navbar />
 
-  {/* Fixed Navbar */}
-  <Navbar />
+<div
+  className="
+  fixed
+  top-24
+  left-1/2 -translate-x-1/2
+  w-[90%] max-w-6xl
+  bottom-0
+  rounded-tr-4xl
+  rounded-tl-4xl
+  overflow-hidden
+"
+    >
 
-  {/* Page Wrapper */}
-  <div className="pt-16 flex flex-col">
-
-    {/* Hero Section */}
-    <section className="relative min-h-[calc(100vh-4rem)] w-full overflow-hidden">
-
-      {/* Background Image */}
-      <Image
+        <Image
         src={Banner}
         alt="Banner"
         fill
         priority
-        className="object-cover object-center"
+        className="object-cover object-center "
       />
 
-      {/* Dark Overlay */}
-      <div className="absolute inset-0 bg-black/50" />
 
-      {/* Hero Content Layer */}
-      <div className="relative z-10 flex min-h-[calc(100vh-4rem)] items-center justify-center px-6 text-center">
-        <div className="max-w-3xl space-y-6 text-white">
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
-            Discover Top GitHub Projects
-          </h1>
+      <section className="h-full overflow-y-auto scrollbar-"> 
+          <div className="relative z-10 flex min-h-[calc(100vh-4rem)] items-center justify-center px-6 text-center">
+          <div className="max-w-3xl space-y-6 text-white">
+            <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
+              Discover Top GitHub Projects
+            </h1>
 
-          <p className="text-lg md:text-xl text-white/80">
-            Connect your GitHub, showcase your profile, and explore
-            the most starred repositories on the platform.
-          </p>
+            <p className="text-lg md:text-xl text-white/80">
+              Connect your GitHub, showcase your profile, and explore
+              the most starred repositories on the platform.
+            </p>
 
-          <button className="px-6 py-3 rounded-xl bg-white text-black font-medium hover:bg-white/90 transition">
-            Get Started
-          </button>
+            <button className="px-6 py-3 rounded-xl bg-white text-black font-medium hover:bg-white/90 transition">
+              Get Started
+            </button>
+          </div>
         </div>
-      </div>
-
+        </div>
     </section>
-
-  </div>
+    </div>
 </main>
   )
 }

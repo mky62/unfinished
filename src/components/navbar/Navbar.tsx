@@ -10,7 +10,7 @@ export default function Navbar({user}: {user?: GithubUser}) {
   return (
     <nav
   className="
-        fixed top-6 left-1/2 -translate-x-1/2
+        fixed top-4 left-1/2 -translate-x-1/2
         w-[70%] max-w-6xl
         z-50
         rounded-2xl
