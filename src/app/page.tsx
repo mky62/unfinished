@@ -1,9 +1,5 @@
-import { SignInButton } from '@clerk/nextjs'
+import { redirect } from "next/navigation"
 
 export default function Home() {
-  return (
-    <SignInButton>
-      <button>Custom sign in button</button>
-    </SignInButton>
-  )
+  redirect("/home")
 }

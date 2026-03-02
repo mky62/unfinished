@@ -1,4 +1,4 @@
-import React from 'react'
+import React,{ useState } from 'react'
 import { useSignUp } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import { Step, OAuthProvider } from './types'
@@ -7,13 +7,13 @@ export const useHandleAuth = () => {
   const { isLoaded, signUp, setActive } = useSignUp()
   const router = useRouter()
 
-  const [step, setStep] = React.useState<Step>('initial')
-  const [email, setEmail] = React.useState('')
-  const [password, setPassword] = React.useState('')
-  const [code, setCode] = React.useState('')
-  const [error, setError] = React.useState('')
-  const [loading, setLoading] = React.useState(false)
-  const [oauthLoading, setOauthLoading] = React.useState<OAuthProvider | null>(null)
+  const [step, setStep] = useState<Step>('initial')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [code, setCode] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [oauthLoading, setOauthLoading] = useState<OAuthProvider | null>(null)
 
   // ── OAuth ─────────────────────────────────────────────────────────────────
 
@@ -35,7 +35,7 @@ export const useHandleAuth = () => {
 
   // ── Email / Password ──────────────────────────────────────────────────────
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!isLoaded) return
     setLoading(true)
@@ -53,7 +53,7 @@ export const useHandleAuth = () => {
 
   // ── Verify ────────────────────────────────────────────────────────────────
 
-  const handleVerify = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleVerify = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!isLoaded) return
     setLoading(true)
@@ -62,7 +62,7 @@ export const useHandleAuth = () => {
       const result = await signUp.attemptEmailAddressVerification({ code })
       if (result.status === 'complete') {
         await setActive({ session: result.createdSessionId })
-        router.push('/dashboard')
+        router.push('/')
       }
     } catch (err: any) {
       setError(err.errors?.[0]?.message ?? 'Invalid verification code.')
